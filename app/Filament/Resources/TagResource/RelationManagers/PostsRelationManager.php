@@ -1,15 +1,10 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\TagResource\RelationManagers;
 
-use App\Filament\Resources\PostResource\Pages;
-use App\Filament\Resources\PostResource\RelationManagers;
-use App\Filament\Resources\PostResource\RelationManagers\TagsRelationManager;
-use App\Filament\Resources\PostResource\Widgets\StatsOverview;
-use App\Models\Post;
 use Filament\Forms;
 use Filament\Resources\Form;
-use Filament\Resources\Resource;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,15 +20,12 @@ use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\BooleanColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
-class PostResource extends Resource
+
+class PostsRelationManager extends RelationManager
 {
-    protected static ?string $model = Post::class;
+    protected static string $relationship = 'posts';
 
     protected static ?string $recordTitleAttribute = 'title';
-
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
 
     public static function form(Form $form): Form
     {
@@ -62,46 +54,23 @@ class PostResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->sortable(),
-                TextColumn::make('title')->limit('50')->sortable()->searchable(),
+                TextColumn::make('title')->limit('50')->sortable(),
                 TextColumn::make('slug')->limit('50'),
                 BooleanColumn::make('is_published'),
                 ImageColumn::make('image')->disk('local')
             ])
             ->filters([
-                Filter::make('Published')
-                ->query(fn (Builder $query): Builder => $query->where('is_published', true)),
-                Filter::make('UnPublished')
-                ->query(fn (Builder $query): Builder => $query->where('is_published', false)),
-                SelectFilter::make('category')->relationship('category', 'name')
+                //
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            TagsRelationManager::class
-        ];
-    }
-
-    public static function getWidgets(): array
-    {
-        return [
-            StatsOverview::class,
-        ];
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListPosts::route('/'),
-            'create' => Pages\CreatePost::route('/create'),
-            'edit' => Pages\EditPost::route('/{record}/edit'),
-        ];
     }
 }
